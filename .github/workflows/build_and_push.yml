@@ -1,8 +1,5 @@
-name: Build and Deploy
+name: Build and push
 on: 
-  pull_request:
-    branches:
-    - master
   push:
     branches:
     - master
@@ -21,6 +18,8 @@ jobs:
       run: |
         docker login docker.pkg.github.com -u publisher -p "${GITHUB_PACKAGE_REGISTRY_TOKEN}"
         docker push docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:${GITHUB_SHA:0:7}
+        docker tag docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:${GITHUB_SHA:0:7} docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:latest
+        docker push docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:latest
       env:
         GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
 
