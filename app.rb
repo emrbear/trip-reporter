@@ -12,5 +12,10 @@ end
 
 post '/api/fill_form' do 
   values = JSON.parse(request.body.read)
-  json ReportFiller.fill(values)
+  report = ReportFiller.fill(values)
+  status(report[:error].present? ? 500 : 200)
+  json report
+rescue StandardError => e
+  status(500)
+  json error: [e]
 end
