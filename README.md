@@ -8,7 +8,7 @@
 
 ## About <a name = "about"></a>
 
-Fills AHCCCS trip report PDF forms from a JSON object. 
+Fills [AHCCCS trip report](https://www.azahcccs.gov/PlansProviders/CurrentProviders/NEMTproviders.html) PDF forms from a JSON object. A trip report PDF with added form fields is included in the image. [PDFtk](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/) is used to fill the form fields.
 
 ## Getting Started <a name = "getting_started"></a>
 
@@ -18,13 +18,14 @@ These instructions will get you a copy of the project up and running on your loc
 
 The project runs under docker. A docker-compose file is provided to easily start the development environment. 
 
-Running tests via `test/run_test.sh` requires use of [jq](https://stedolan.github.io/jq/).
-
 ### Installing
 
 ```
 docker-compose up
 ```
+
+A simple [test script](/test/run_test.sh) is included that will output `result.pdf` in your current working directory.
+
 
 ## Usage <a name = "usage"></a>
 
@@ -47,9 +48,11 @@ A success will return a code 200 with a JSON object containing Base64 encoded PD
 }
 ```
 
-Errors return the appropriate code (500, 404, etc) with a description of the error:
+Errors return the appropriate code (500, 404, etc) with a description of the error(s):
 ```
 {
-  "error: "File not Found"
+  "error: [
+    "SignaturePdf::SignatureError - /tmp/d20191112-1-1j76cvt/signature.png error: improper image header `/tmp/d20191112-1-1j76cvt/signature.png' @ error/png.c/ReadPNGImage/4092"
+  ]
 }
 ```

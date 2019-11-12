@@ -158,4 +158,4 @@ curl -X "POST" "http://localhost:4567/api/fill_form" \
   "dropoff_miles_4": "10",
   "dropoff_address_6": "Testing",
   "multiple_stops_3": "X"
-}' | jq -r .pdf | base64 -D > result.pdf
+}' | jq -r .pdf | base64 -d > result.pdf

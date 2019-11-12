@@ -1,7 +1,7 @@
 # docker run --rm -v "$PWD":/usr/src/app -w /usr/src/app ruby:2.6 bundle lock
 FROM ruby:2.6
 WORKDIR /usr/src/app
-RUN apt-get update && apt-get install -y pdftk libmagickwand-dev
+RUN apt-get update && apt-get install -y pdftk libmagickwand-dev jq
 
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
