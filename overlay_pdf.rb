@@ -5,7 +5,7 @@ require 'net/http'
 require 'active_support'
 require 'active_support/core_ext/object'
 
-class SignaturePdf
+class OverlayPdf
 
   # dir is the tmp directory that the filler is working in
   # 
@@ -19,6 +19,7 @@ class SignaturePdf
   attr_accessor :params, :path
 
   def make 
+    mark_am_pm
     retrieve_signature_files
     place_images
     render_file
@@ -28,10 +29,50 @@ class SignaturePdf
   private
 
   def render_file
-    pdf.render_file(path.join('signatures.pdf'))
+    pdf.render_file(path.join('overlays.pdf'))
+  end
+
+  def mark_am_pm
+    mark_first_page_am_pm
+    mark_second_page_am_pm
+  end
+
+  def mark_first_page_am_pm
+    am_pm_positions.keys.select { |k| k.match(/\d/).to_s.to_i <= 3}.each do |key|
+      if params[key] == true
+        params.delete(key)
+        stroke_box(key)
+      end
+    end
+  end
+
+  def mark_second_page_am_pm
+    am_pm_positions.keys.select { |k| k.match(/\d/).to_s.to_i > 3}.each do |key|
+      if params[key] == true
+        if pdf.page_count == 1
+          pdf.start_new_page
+        end
+        params.delete(key)
+        stroke_box(key)
+      end
+    end
+  end
+
+  def stroke_box(key)
+    coords = am_pm_positions[key]
+    pdf.canvas do 
+      pdf.stroke do 
+        pdf.rounded_rectangle [coords[:x], coords[:y]], coords[:w], coords[:h], 2
+      end
+    end
   end
 
   def place_images
+    # Signatures are always on page 2
+    # We or may not have created a page 2 depending on the number of trips
+    if pdf.page_count == 1
+      pdf.start_new_page
+    end
     # canvas ignores the default margins which mess with the alignment of the two PDFs we're going to end up merging.
     pdf.canvas do 
       if File.exist?(signature_path)
@@ -179,13 +220,37 @@ class SignaturePdf
     @pdf ||= new_pdf
   end
 
-  # Make a new Prawn::Document with 2 pages.
-  # The form we're filling out and merging with is always 2 pages long.
-  # 
   def new_pdf
-    new_pdf = Prawn::Document.new(:page_size => "LETTER")
-    new_pdf.start_new_page
-    new_pdf
+    Prawn::Document.new(:page_size => "LETTER")
+  end
+
+  def am_pm_positions 
+    {
+      'pickup_am_1' => { :x => 456, :y => 570, :w => 15, :h => 10 }, 
+      'pickup_am_2' => { :x => 456, :y => 371, :w => 16, :h => 10 }, 
+      'pickup_am_3' => { :x => 456, :y => 199, :w => 15, :h => 10 }, 
+      'pickup_am_4' => { :x => 456, :y => 717, :w => 15, :h => 10 }, 
+      'pickup_am_5' => { :x => 456, :y => 551, :w => 15, :h => 10 }, 
+      'pickup_am_6' => { :x => 456, :y => 380, :w => 15, :h => 10 }, 
+      'dropoff_am_1' => { :x => 456, :y => 519, :w => 16, :h => 10 }, 
+      'dropoff_am_2' => { :x => 456, :y => 323, :w => 16, :h => 10 }, 
+      'dropoff_am_3' => { :x => 456, :y => 151, :w => 16, :h => 10 }, 
+      'dropoff_am_4' => { :x => 456, :y => 663, :w => 16, :h => 10 }, 
+      'dropoff_am_5' => { :x => 456, :y => 493, :w => 16, :h => 10 }, 
+      'dropoff_am_6' => { :x => 456, :y => 330, :w => 16, :h => 10 }, 
+      'pickup_pm_1' => { :x => 474, :y => 570, :w => 16, :h => 10 }, 
+      'pickup_pm_2' => { :x => 474, :y => 371, :w => 16, :h => 10 }, 
+      'pickup_pm_3' => { :x => 474, :y => 199, :w => 16, :h => 10 }, 
+      'pickup_pm_4' => { :x => 474, :y => 717, :w => 16, :h => 10 }, 
+      'pickup_pm_5' => { :x => 474, :y => 551, :w => 16, :h => 10 }, 
+      'pickup_pm_6' => { :x => 474, :y => 380, :w => 16, :h => 10 }, 
+      'dropoff_pm_1' => { :x => 474, :y => 519, :w => 16, :h => 10 }, 
+      'dropoff_pm_2' => { :x => 474, :y => 323, :w => 16, :h => 10 }, 
+      'dropoff_pm_3' => { :x => 474, :y => 151, :w => 16, :h => 10 }, 
+      'dropoff_pm_4' => { :x => 474, :y => 664, :w => 16, :h => 10 }, 
+      'dropoff_pm_5' => { :x => 474, :y => 492, :w => 16, :h => 10 }, 
+      'dropoff_pm_6' => { :x => 474, :y => 330, :w => 16, :h => 10 }, 
+    }
   end
 
   class SignatureError < StandardError

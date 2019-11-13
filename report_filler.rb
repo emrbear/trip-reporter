@@ -1,6 +1,6 @@
 require 'pdf_forms'
 require 'base64'
-require_relative 'signature_pdf'
+require_relative 'overlay_pdf'
 
 
 class ReportFiller
@@ -49,9 +49,9 @@ class ReportFiller
   #   :dropoff_time_1,
   #   :dropoff_odometer_1,
   #   :reason_for_visit_1,
-  #   :signature,
-  #   :driver_signature,
-  #   :signature_date)
+  #   :overlay,
+  #   :driver_overlay,
+  #   :overlay_date)
 
   private
 
@@ -60,8 +60,9 @@ class ReportFiller
   end
 
   def make_result
+    create_overlay_pdf # Make the overlay PDF first to remove any unneeded keys
     if fill_form
-      if add_signatures
+      if add_overlays
         return encode
       end
     end
@@ -69,12 +70,12 @@ class ReportFiller
   end
 
   # PDFtk doesn't know how to deal with images so we're creating a PDF with Prawn
-  # that contains the signatures and then merging the two together
+  # that contains the overlays and then merging the two together
   # Return true because pdftk doesn't return anything on success, but will raise if there is an error
   # 
-  def add_signatures
-    if create_signature_pdf
-      pdftk.multistamp(flattened_path, signatures_path, final_path)
+  def add_overlays
+    if File.exist?(overlays_path)
+      pdftk.multistamp(flattened_path, overlays_path, final_path)
       true
     end
   rescue PdfForms::PdftkError => e
@@ -111,8 +112,8 @@ class ReportFiller
     path.join('flattened_form.pdf')
   end
 
-  def signatures_path
-    path.join('signatures.pdf')
+  def overlays_path
+    path.join('overlays.pdf')
   end
 
   def final_path
@@ -123,9 +124,9 @@ class ReportFiller
     Pathname.new(File.dirname(File.expand_path(__FILE__))).join('assets','form_template.pdf')
   end
 
-  def create_signature_pdf
-    SignaturePdf.make(params, path)
-  rescue SignaturePdf::SignatureError => e 
+  def create_overlay_pdf
+    OverlayPdf.make(params, path)
+  rescue OverlayPdf::OverlayError => e 
     self.errors << e
     false
   end
