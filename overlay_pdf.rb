@@ -17,6 +17,11 @@ class OverlayPdf
   end
 
   attr_accessor :params, :path
+  attr_reader :page_1_keys, :page_2_keys
+
+  def initialize
+    @page_1_keys, @page_2_keys = am_pm_positions.keys.partition { |k| k.match(/\d/).to_s.to_i <= 3}
+  end
 
   def make 
     mark_am_pm
@@ -38,23 +43,23 @@ class OverlayPdf
   end
 
   def mark_first_page_am_pm
-    am_pm_positions.keys.select { |k| k.match(/\d/).to_s.to_i <= 3}.each do |key|
+    self.page_1_keys.each do |key|
       if params[key] == true
-        params.delete(key)
         stroke_box(key)
       end
+      params.delete(key)
     end
   end
 
   def mark_second_page_am_pm
-    am_pm_positions.keys.select { |k| k.match(/\d/).to_s.to_i > 3}.each do |key|
+    self.page_2_keys.each do |key|
       if params[key] == true
         if pdf.page_count == 1
           pdf.start_new_page
         end
-        params.delete(key)
         stroke_box(key)
       end
+      params.delete(key)
     end
   end
 
