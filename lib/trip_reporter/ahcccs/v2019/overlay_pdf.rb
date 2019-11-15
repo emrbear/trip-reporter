@@ -5,7 +5,7 @@ require 'net/http'
 require 'active_support'
 require 'active_support/core_ext/object'
 
-class OverlayPdf
+class TripReporter::Ahcccs::V2019::OverlayPdf
 
   # dir is the tmp directory that the filler is working in
   #
@@ -117,8 +117,8 @@ class OverlayPdf
   # If we're missing a signature abort now
   #
   def verify_images
-    raise OverlayPdf::SignatureError, 'Missing Member Signature' unless File.exist?(signature_path)
-    raise OverlayPdf::SignatureError, 'Missing Driver Signature' unless File.exist?(driver_sig_path)
+    raise TripReporter::OverlayError, 'Missing Member Signature' unless File.exist?(signature_path)
+    raise TripReporter::OverlayError, 'Missing Driver Signature' unless File.exist?(driver_sig_path)
   end
 
   # Remove any extra whitespace and the background if possible to make them fit better
@@ -136,7 +136,7 @@ class OverlayPdf
     bg_color = image.background_color
     image.paint_transparent(bg_color, alpha: 0).write(path_to_file)
   rescue Magick::ImageMagickError => e
-    raise OverlayPdf::SignatureError, "#{path_to_file} error: #{e}"
+    raise TripReporter::OverlayError, "#{path_to_file} error: #{e}"
   end
 
   # Download without loading into memory
@@ -159,7 +159,7 @@ class OverlayPdf
       end
     end
   rescue StandardError => e
-    raise OverlayPdf::SignatureError, "Failed to download #{url} with error: #{e}"
+    raise TripReporter::OverlayError, "Failed to download #{url} with error: #{e}"
   end
 
 
@@ -245,9 +245,6 @@ class OverlayPdf
 
   def position_file
     File.read(Pathname.new(File.dirname(File.expand_path(__FILE__))).join('assets', 'overlay_positions.json'))
-  end
-
-  class OverlayError < StandardError
   end
 
 end

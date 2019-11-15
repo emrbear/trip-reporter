@@ -1,6 +1,6 @@
 #/bin/bash
 ## Request
-curl -X "POST" "http://localhost:4567/api/fill_form" \
+curl -X "POST" "http://localhost:4567/api/ahcccs/v2019/fill" \
      -H 'Content-Type: application/json' \
      -d $'{
   "multiple_members_drop_no": true,

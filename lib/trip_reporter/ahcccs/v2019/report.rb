@@ -1,9 +1,7 @@
 require 'pdf_forms'
 require 'base64'
-require_relative 'overlay_pdf'
 
-
-class ReportFiller
+class TripReporter::Ahcccs::V2019::Report
   attr_accessor :params, :path, :errors
 
   def self.fill(params)
@@ -17,8 +15,8 @@ class ReportFiller
   end
 
   def fill
-    raise ReportFiller::FillError, "Missing template file" unless File.exist?(template_path)
-    
+    raise TripReporter::FillError, "Missing template file" unless File.exist?(template_path)
+
     Dir.mktmpdir do |dir|
       self.path = Pathname.new(dir)
       if result && !self.errors.any?
@@ -28,30 +26,6 @@ class ReportFiller
       end
     end
   end
-
-  # required_params( 
-  #   :company_address, 
-  #   :drivers_name, 
-  #   :date, 
-  #   :vehicle_number, 
-  #   :vehicle_make_color,
-  #   :ahcccs_id,
-  #   :ahcccs_id_2,
-  #   :dob,
-  #   :dob_2,
-  #   :member_name,
-  #   :member_name_2,
-  #   :mailing_address,
-  #   :pickup_address_1,
-  #   :pickup_time_1,
-  #   :pickup_odometer_1,
-  #   :dropoff_address_1,
-  #   :dropoff_time_1,
-  #   :dropoff_odometer_1,
-  #   :reason_for_visit_1,
-  #   :overlay,
-  #   :driver_overlay,
-  #   :overlay_date)
 
   private
 
@@ -72,7 +46,7 @@ class ReportFiller
   # PDFtk doesn't know how to deal with images so we're creating a PDF with Prawn
   # that contains the overlays and then merging the two together
   # Return true because pdftk doesn't return anything on success, but will raise if there is an error
-  # 
+  #
   def add_overlays
     if File.exist?(overlays_path)
       pdftk.multistamp(flattened_path, overlays_path, final_path)
@@ -85,7 +59,7 @@ class ReportFiller
 
   # The response should be a json object with the PDF base64 encoded
   # Or an error if there was a problem
-  # 
+  #
   def encode
     Base64.encode64(File.open(final_path, "rb").read)
   rescue StandardError => e
@@ -95,7 +69,7 @@ class ReportFiller
 
   # Use PDFtk to fill in the form fields and remove the form from the PDF
   # Return true because pdftk doesn't return anything on success, but will raise if there is an error
-  # 
+  #
   def fill_form
     pdftk.fill_form(template_path, flattened_path, self.params, :flatten => true)
     true
@@ -125,12 +99,9 @@ class ReportFiller
   end
 
   def create_overlay_pdf
-    OverlayPdf.make(params, path)
-  rescue OverlayPdf::OverlayError => e 
+    TripReporter::Ahcccs::V2019::OverlayPdf.make(params, path)
+  rescue TripReporter::OverlayError => e
     self.errors << e
     false
-  end
-
-  class ReportFiller::FillError < StandardError
   end
 end

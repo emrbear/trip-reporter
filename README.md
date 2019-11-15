@@ -12,11 +12,11 @@ Fills [AHCCCS trip report](https://www.azahcccs.gov/PlansProviders/CurrentProvid
 
 ## Getting Started <a name = "getting_started"></a>
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
-The project runs under docker. A docker-compose file is provided to easily start the development environment. 
+The project runs under docker. A docker-compose file is provided to easily start the development environment.
 
 ### Installing
 
@@ -29,10 +29,10 @@ A simple [test script](/test/run_test.sh) is included that will output `result.p
 
 ## Usage <a name = "usage"></a>
 
-To fill a trip report post the data to `/api/fill_form`
+To fill a trip report post the data to `/api/ahcccs/v2019/fill`
 
 ```
-curl -X "POST" "http://localhost:4567/api/fill/ahcccs" \
+curl -X "POST" "http://localhost:4567/api/ahcccs/v2019/fill" \
      -H 'Content-Type: application/json' \
      -d $'{"key": "value"}'
 ```
@@ -51,8 +51,8 @@ A success will return a code 200 with a JSON object containing Base64 encoded PD
 Errors return the appropriate code (500, 404, etc) with a description of the error(s):
 ```
 {
-  "error: [
-    "SignaturePdf::SignatureError - /tmp/d20191112-1-1j76cvt/signature.png error: improper image header `/tmp/d20191112-1-1j76cvt/signature.png' @ error/png.c/ReadPNGImage/4092"
+  "error": [
+    "TripReporter::OverlayError - /tmp/d20191112-1-1j76cvt/signature.png error: improper image header `/tmp/d20191112-1-1j76cvt/signature.png' @ error/png.c/ReadPNGImage/4092"
   ]
 }
 ```

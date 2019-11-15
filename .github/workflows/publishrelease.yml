@@ -11,12 +11,12 @@ jobs:
       - uses: actions/checkout@master
 
       - name: Build the Docker container image
-        run: docker build -t docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:${{ github.event.tag_name }} .
+        run: docker build -t docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:${{ github.event.release.tag_name }} .
 
       - name: Push the image to GPR
         run: |
           docker login docker.pkg.github.com -u publisher -p "${GITHUB_PACKAGE_REGISTRY_TOKEN}"
-          docker push docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:${{ github.event.tag_name }}
+          docker push docker.pkg.github.com/emrbear/trip-reporter/trip-reporter:${{ github.event.release.tag_name }}
         env:
           GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_PACKAGE_REGISTRY_TOKEN }}
 
